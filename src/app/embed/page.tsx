@@ -26,7 +26,10 @@ export default function EmbedVisualizerPage() {
 				if (!res.ok) throw new Error('Error fetching data')
 				const json = await res.json()
 				if (!Array.isArray(json)) throw new Error('Invalid data format')
-				setData(json)
+				console.log('LLM returned data:', JSON.stringify(json, null, 2))
+				const cleaned = json.map((d: any) => ({ label: d.label, value: Number(d.value) }))
+				console.log('Cleaned data:', JSON.stringify(cleaned, null, 2))
+				setData(cleaned)
 			} catch (err: any) {
 				setError(err.message || 'Unexpected error')
 			}
@@ -47,13 +50,21 @@ export default function EmbedVisualizerPage() {
 		const chart = svg.append('g').attr('transform', `translate(${margin.left},${margin.top})`)
 
 		if (chartType === 'bar' || chartType === 'line') {
-			const x = d3.scaleBand().domain(data.map((d: any) => d.label)).range([0, width]).padding(0.1)
-			const y = d3.scaleLinear().domain([0, d3.max(data, (d: any) => d.value)]).range([height, 0])
+			const x = d3
+				.scaleBand()
+				.domain(data.map((d: any) => d.label))
+				.range([0, width])
+				.padding(0.1)
+			const y = d3
+				.scaleLinear()
+				.domain([0, d3.max(data, (d: any) => d.value)])
+				.range([height, 0])
 			chart.append('g').call(d3.axisLeft(y))
 			chart.append('g').attr('transform', `translate(0,${height})`).call(d3.axisBottom(x))
 
 			if (chartType === 'bar') {
-				chart.selectAll('rect')
+				chart
+					.selectAll('rect')
 					.data(data)
 					.enter()
 					.append('rect')
@@ -63,11 +74,13 @@ export default function EmbedVisualizerPage() {
 					.attr('height', (d: any) => height - y(d.value))
 					.attr('fill', (_d, i) => colors[i % colors.length])
 			} else {
-				const line = d3.line()
+				const line = d3
+					.line()
 					.x((d: any) => x(d.label)! + x.bandwidth() / 2)
 					.y((d: any) => y(d.value))
 
-				chart.append('path')
+				chart
+					.append('path')
 					.datum(data)
 					.attr('fill', 'none')
 					.attr('stroke', '#4f46e5')
@@ -80,16 +93,15 @@ export default function EmbedVisualizerPage() {
 			const pie = d3.pie<any>().value((d) => d.value)
 			const arc = d3.arc<any>().innerRadius(0).outerRadius(radius)
 
-			const arcs = pieChart.selectAll('arc')
-				.data(pie(data))
-				.enter()
-				.append('g')
+			const arcs = pieChart.selectAll('arc').data(pie(data)).enter().append('g')
 
-			arcs.append('path')
+			arcs
+				.append('path')
 				.attr('d', arc)
 				.attr('fill', (_d, i) => colors[i % colors.length])
 
-			arcs.append('text')
+			arcs
+				.append('text')
 				.attr('transform', (d) => `translate(${arc.centroid(d)})`)
 				.attr('text-anchor', 'middle')
 				.attr('font-size', '10px')
@@ -99,8 +111,8 @@ export default function EmbedVisualizerPage() {
 
 	return (
 		<div className="p-4">
-			{error && <p className="text-red-500 text-sm">{error}</p>}
-			<svg ref={chartRef} width={500} height={300} className="border rounded" />
+			{error && <p className="text-sm text-red-500">{error}</p>}
+			<svg ref={chartRef} width={500} height={300} className="rounded border" />
 		</div>
 	)
 }

@@ -1,7 +1,7 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -17,7 +17,7 @@ export default function HomePage() {
 	}
 
 	return (
-		<div className="max-w-xl mx-auto p-4 space-y-4">
+		<div className="mx-auto max-w-xl space-y-4 p-4">
 			<h1 className="text-2xl font-bold">Embed Chart Generator</h1>
 			<Textarea
 				rows={4}
@@ -29,14 +29,19 @@ export default function HomePage() {
 				<select
 					value={chartType}
 					onChange={(e) => setChartType(e.target.value as any)}
-					className="border px-2 py-1 rounded text-sm"
+					className="rounded border px-2 py-1 text-sm"
 				>
 					<option value="bar">Bar</option>
 					<option value="line">Line</option>
 					<option value="pie">Pie</option>
 				</select>
-				<Button variant="default" onClick={handleEmbedLink}>Generate Visualization</Button>
+				<Button variant="default" onClick={handleEmbedLink}>
+					Generate Visualization
+				</Button>
 			</div>
+			<p className="mt-12 p-2">
+				Visualize a weekly breakdown of fitness activities: running, lifting, yoga, and rest.
+			</p>
 		</div>
 	)
 }
