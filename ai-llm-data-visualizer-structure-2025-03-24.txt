@@ -1,0 +1,20 @@
+src
+├── app
+│   ├── api
+│   │   └── chat
+│   │       └── route.ts
+│   ├── favicon.ico
+│   ├── globals.css
+│   ├── layout.tsx
+│   └── page.tsx
+├── components
+│   └── ui
+│       ├── button.tsx
+│       ├── card.tsx
+│       └── input.tsx
+└── lib
+    ├── store
+    │   └── chat-store.ts
+    └── utils.ts
+
+8 directories, 10 files
