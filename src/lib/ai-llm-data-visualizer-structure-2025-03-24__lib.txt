@@ -1,6 +1,0 @@
-.
-├── store
-│   └── chat-store.ts
-└── utils.ts
-
-2 directories, 2 files

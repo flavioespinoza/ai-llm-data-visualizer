@@ -35,7 +35,7 @@ export default function HomePage() {
 					<option value="line">Line</option>
 					<option value="pie">Pie</option>
 				</select>
-				<Button variant="outline" onClick={handleEmbedLink}>Open Embed View</Button>
+				<Button variant="default" onClick={handleEmbedLink}>Generate Visualization</Button>
 			</div>
 		</div>
 	)
