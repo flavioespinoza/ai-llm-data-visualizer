@@ -1,7 +1,5 @@
 'use client'
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 import { useSearchParams } from 'next/navigation'
 import { useEffect, useState, useRef } from 'react'
 import * as d3 from 'd3'

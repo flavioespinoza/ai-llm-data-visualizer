@@ -1,7 +1,5 @@
 'use client'
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 import { useState, useEffect, useRef } from 'react'
 import * as d3 from 'd3'
 import { Button } from '@/components/ui/button'
