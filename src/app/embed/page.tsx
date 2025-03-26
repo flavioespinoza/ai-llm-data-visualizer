@@ -1,118 +1,122 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
+import { useSearchParams } from 'next/navigation'
+import { useEffect, useState, useRef } from 'react'
 import * as d3 from 'd3'
 
 export default function EmbedVisualizerPage() {
-	const chartRef = useRef<SVGSVGElement | null>(null)
-	const [data, setData] = useState<any[]>([])
-	const [error, setError] = useState('')
-	const [chartType, setChartType] = useState<'bar' | 'line' | 'pie'>('bar')
+  const [structuredData, setStructuredData] = useState<any>(null)
+  const [error, setError] = useState('')
+  const chartRef = useRef<SVGSVGElement | null>(null)
 
-	useEffect(() => {
-		const url = new URL(window.location.href)
-		const prompt = url.searchParams.get('prompt')
-		const type = url.searchParams.get('type')
-		if (type === 'line' || type === 'pie') setChartType(type)
-		if (!prompt) return
+  const searchParams = useSearchParams()
+  const prompt = searchParams.get('prompt') || ''
+  const chartType = (searchParams.get('type') || 'bar') as 'bar' | 'line' | 'pie'
 
-		const fetchData = async () => {
-			try {
-				const res = await fetch('/api/visualize', {
-					method: 'POST',
-					headers: { 'Content-Type': 'application/json' },
-					body: JSON.stringify({ prompt })
-				})
-				if (!res.ok) throw new Error('Error fetching data')
-				const json = await res.json()
-				if (!Array.isArray(json)) throw new Error('Invalid data format')
-				console.log('LLM returned data:', JSON.stringify(json, null, 2))
-				const cleaned = json.map((d: any) => ({ label: d.label, value: Number(d.value) }))
-				console.log('Cleaned data:', JSON.stringify(cleaned, null, 2))
-				setData(cleaned)
-			} catch (err: any) {
-				setError(err.message || 'Unexpected error')
-			}
-		}
-		fetchData()
-	}, [])
+  useEffect(() => {
+    if (!prompt) return
 
-	useEffect(() => {
-		if (!data || !Array.isArray(data)) return
-		const svg = d3.select(chartRef.current)
-		svg.selectAll('*').remove()
+    const analyze = async () => {
+      try {
+        const res = await fetch('/api/visualize', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prompt })
+        })
 
-		const margin = { top: 20, right: 30, bottom: 40, left: 40 }
-		const width = 500 - margin.left - margin.right
-		const height = 300 - margin.top - margin.bottom
-		const colors = d3.schemeTableau10
+        if (!res.ok) throw new Error('Failed to fetch structured data')
+        const data = await res.json()
+        setStructuredData(data)
+      } catch (err: any) {
+        console.error('[API_VISUALIZE_ERROR]', err)
+        setError(err.message || 'Unexpected error')
+      }
+    }
 
-		const chart = svg.append('g').attr('transform', `translate(${margin.left},${margin.top})`)
+    analyze()
+  }, [prompt])
 
-		if (chartType === 'bar' || chartType === 'line') {
-			const x = d3
-				.scaleBand()
-				.domain(data.map((d: any) => d.label))
-				.range([0, width])
-				.padding(0.1)
-			const y = d3
-				.scaleLinear()
-				.domain([0, d3.max(data, (d: any) => d.value)])
-				.range([height, 0])
-			chart.append('g').call(d3.axisLeft(y))
-			chart.append('g').attr('transform', `translate(0,${height})`).call(d3.axisBottom(x))
+  useEffect(() => {
+    if (!structuredData || !Array.isArray(structuredData)) return
 
-			if (chartType === 'bar') {
-				chart
-					.selectAll('rect')
-					.data(data)
-					.enter()
-					.append('rect')
-					.attr('x', (d: any) => x(d.label)!)
-					.attr('y', (d: any) => y(d.value))
-					.attr('width', x.bandwidth())
-					.attr('height', (d: any) => height - y(d.value))
-					.attr('fill', (_d, i) => colors[i % colors.length])
-			} else {
-				const line = d3
-					.line()
-					.x((d: any) => x(d.label)! + x.bandwidth() / 2)
-					.y((d: any) => y(d.value))
+    const svg = d3.select(chartRef.current)
+    svg.selectAll('*').remove()
 
-				chart
-					.append('path')
-					.datum(data)
-					.attr('fill', 'none')
-					.attr('stroke', '#4f46e5')
-					.attr('stroke-width', 2)
-					.attr('d', line)
-			}
-		} else if (chartType === 'pie') {
-			const radius = Math.min(width, height) / 2
-			const pieChart = svg.append('g').attr('transform', `translate(${width / 2},${height / 2})`)
-			const pie = d3.pie<any>().value((d) => d.value)
-			const arc = d3.arc<any>().innerRadius(0).outerRadius(radius)
+    const margin = { top: 20, right: 30, bottom: 40, left: 40 }
+    const width = 500 - margin.left - margin.right
+    const height = 300 - margin.top - margin.bottom
+    const colors = d3.schemeTableau10
 
-			const arcs = pieChart.selectAll('arc').data(pie(data)).enter().append('g')
+    const chart = svg
+      .append('g')
+      .attr('transform', `translate(${margin.left},${margin.top})`)
 
-			arcs
-				.append('path')
-				.attr('d', arc)
-				.attr('fill', (_d, i) => colors[i % colors.length])
+    if (chartType === 'bar' || chartType === 'line') {
+      const x = d3.scaleBand()
+        .domain(structuredData.map((d: any) => d.label))
+        .range([0, width])
+        .padding(0.1)
 
-			arcs
-				.append('text')
-				.attr('transform', (d) => `translate(${arc.centroid(d)})`)
-				.attr('text-anchor', 'middle')
-				.attr('font-size', '10px')
-				.text((d) => d.data.label)
-		}
-	}, [data, chartType])
+      const y = d3.scaleLinear()
+        .domain([0, d3.max(structuredData, (d: any) => d.value)])
+        .range([height, 0])
 
-	return (
-		<div className="p-4">
-			{error && <p className="text-sm text-red-500">{error}</p>}
-			<svg ref={chartRef} width={500} height={300} className="rounded border" />
-		</div>
-	)
+      chart.append('g').call(d3.axisLeft(y))
+      chart.append('g').attr('transform', `translate(0,${height})`).call(d3.axisBottom(x))
+
+      if (chartType === 'bar') {
+        chart.selectAll('rect')
+          .data(structuredData)
+          .enter()
+          .append('rect')
+          .attr('x', (d: any) => x(d.label)!)
+          .attr('y', (d: any) => y(d.value))
+          .attr('width', x.bandwidth())
+          .attr('height', (d: any) => height - y(d.value))
+          .attr('fill', (_d, i) => colors[i % colors.length])
+      } else {
+        const line = d3.line()
+          .x((d: any) => x(d.label)! + x.bandwidth() / 2)
+          .y((d: any) => y(d.value))
+
+        chart.append('path')
+          .datum(structuredData)
+          .attr('fill', 'none')
+          .attr('stroke', '#4f46e5')
+          .attr('stroke-width', 2)
+          .attr('d', line)
+      }
+    } else if (chartType === 'pie') {
+      const radius = Math.min(width, height) / 2
+      const pieChart = svg.append('g')
+        .attr('transform', `translate(${width / 2},${height / 2})`)
+
+      const pie = d3.pie<any>().value((d) => d.value)
+      const arc = d3.arc<any>().innerRadius(0).outerRadius(radius)
+
+      const arcs = pieChart.selectAll('arc')
+        .data(pie(structuredData))
+        .enter()
+        .append('g')
+
+      arcs.append('path')
+        .attr('d', arc)
+        .attr('fill', (_d, i) => colors[i % colors.length])
+
+      arcs.append('text')
+        .attr('transform', (d) => `translate(${arc.centroid(d)})`)
+        .attr('text-anchor', 'middle')
+        .attr('font-size', '10px')
+        .text((d) => d.data.label)
+    }
+  }, [structuredData, chartType])
+
+  return (
+    <div className="p-4 bg-white dark:bg-black">
+      {error && <p className="text-red-500 text-sm">{error}</p>}
+      <svg ref={chartRef} width={500} height={300} className="border rounded mx-auto" />
+    </div>
+  )
 }
