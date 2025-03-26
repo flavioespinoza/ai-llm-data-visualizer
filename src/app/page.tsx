@@ -5,7 +5,6 @@
 import { useState, useEffect, useRef } from 'react'
 import * as d3 from 'd3'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { useTheme } from 'next-themes'
 import { Moon, Sun, Download } from 'lucide-react'
