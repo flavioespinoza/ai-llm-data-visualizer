@@ -10,7 +10,7 @@ export default function DataVisualizerPage() {
 	const [loading, setLoading] = useState(false)
 	const [structuredData, setStructuredData] = useState<any>(null)
 	const [error, setError] = useState('')
-	const [chartType, setChartType] = useState<'bar' | 'line' | 'pie'>('bar')
+	const [chartType] = useState('bar')
 	const chartRef = useRef<SVGSVGElement | null>(null)
 
 	const handleAnalyze = async () => {
