@@ -1,15 +1,12 @@
 import type { Metadata } from 'next'
-import { Geist, Geist_Mono } from 'next/font/google'
+import { Inter } from 'next/font/google'
 import './globals.css'
+import '@flavioespinoza/salsa-ui/dist/index.css'
 
-const geistSans = Geist({
-	variable: '--font-geist-sans',
-	subsets: ['latin']
-})
-
-const geistMono = Geist_Mono({
-	variable: '--font-geist-mono',
-	subsets: ['latin']
+const inter = Inter({
+	subsets: ['latin'],
+	weight: ['300', '400', '500', '700'], // Light (300), Regular (400), Medium (500), Bold (700)
+	variable: '--font-inter'
 })
 
 export const metadata: Metadata = {
@@ -23,8 +20,8 @@ export default function RootLayout({
 	children: React.ReactNode
 }>) {
 	return (
-		<html lang="en">
-			<body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>{children}</body>
+		<html lang="en" className={inter.className} suppressHydrationWarning>
+			<body>{children}</body>
 		</html>
 	)
 }
