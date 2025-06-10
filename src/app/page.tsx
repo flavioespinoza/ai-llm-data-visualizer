@@ -5,7 +5,6 @@ import * as d3 from 'd3'
 // import { Textarea } from '@/components/ui/textarea'
 import { Button, Textarea } from '@flavioespinoza/salsa-ui'
 
-
 export default function DataVisualizerPage() {
 	const [input, setInput] = useState('')
 	const [loading, setLoading] = useState(false)
@@ -129,14 +128,14 @@ export default function DataVisualizerPage() {
 
 	return (
 		<section>
-			<div className=" max-w-6xl space-y-4 p-4">
+			<div className="max-w-6xl space-y-4 p-4">
 				<p className="font-bold" style={{ fontSize: '2rem' }}>
 					LLM Data Visualizer
 				</p>
 				<p className="text-muted-foreground text-base leading-relaxed">
 					Converts natural language into interactive D3.js charts using OpenAI and Tailwind CSS.
 				</p>
-				<div className="pb-6 mt-6">
+				<div className="mt-6 pb-6">
 					<h3 className="text-lg font-semibold">Examples</h3>
 					<ul>
 						<li className="text-muted-foreground text-base leading-relaxed">
@@ -152,14 +151,13 @@ export default function DataVisualizerPage() {
 				</div>
 				<div className="mb-4">
 					<Textarea
-          className='border border-solid border-zinc-300 bg-[#a1c4d8] text-black'
+						className="border border-solid border-zinc-300 bg-[#a1c4d8] text-black"
 						rows={6}
 						placeholder="Enter a prompt to analyze..."
 						value={input}
 						onChange={(e) => setInput(e.target.value)}
 						disabled={loading}
 					/>
-
 				</div>
 
 				<div className="mt-6 flex gap-2">
